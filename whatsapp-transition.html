@@ -49,7 +49,7 @@
             margin-bottom: 15px;
         }
         
-        h1 {
+        h1 { 
             font-size: 28px;
             font-weight: 300;
             margin-bottom: 10px;
@@ -75,30 +75,19 @@
         
         .phone-input-wrapper {
             position: relative;
-            display: flex;
-            align-items: center;
-        }
-        
-        .country-code {
-            background-color: #2a3942;
-            padding: 18px 15px;
-            border-radius: 12px 0 0 12px;
-            font-size: 18px;
-            color: #e9edef;
-            border: 1px solid #2a3942;
-            border-right: none;
         }
         
         .phone-input {
             width: 100%;
-            padding: 18px 15px;
+            padding: 18px 20px;
             font-size: 18px;
             background-color: #2a3942;
             color: #e9edef;
             border: 1px solid #2a3942;
-            border-radius: 0 12px 12px 0;
+            border-radius: 12px;
             outline: none;
             transition: all 0.3s ease;
+            letter-spacing: 0.5px;
         }
         
         .phone-input:focus {
@@ -110,8 +99,79 @@
             color: #8696a0;
         }
         
-        .phone-input.formatted {
-            letter-spacing: 1px;
+        .country-info {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 14px;
+            color: #8696a0;
+            min-height: 20px;
+        }
+        
+        .country-display {
+            background-color: #00a884;
+            color: #111b21;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .country-change {
+            color: #00a884;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        
+        .country-change:hover {
+            color: #06cf9c;
+        }
+        
+        .country-selector {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #2a3942;
+            border-radius: 8px;
+        }
+        
+        .country-selector.show {
+            display: block;
+        }
+        
+        .country-search {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #1f2c33;
+            color: #e9edef;
+            border: 1px solid #2a3942;
+            border-radius: 6px;
+            outline: none;
+        }
+        
+        .country-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .country-option {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+        
+        .country-option:hover {
+            background-color: #1f2c33;
+        }
+        
+        .country-option.selected {
+            background-color: #00a884;
+            color: #111b21;
         }
         
         .hint {
@@ -209,8 +269,8 @@
                 font-size: 24px;
             }
             
-            .phone-input, .country-code {
-                padding: 16px 12px;
+            .phone-input {
+                padding: 16px 18px;
             }
             
             .btn {
@@ -235,8 +295,8 @@
                 font-size: 22px;
             }
             
-            .phone-input, .country-code {
-                padding: 14px 10px;
+            .phone-input {
+                padding: 14px 16px;
                 font-size: 16px;
             }
         }
@@ -249,23 +309,34 @@
                 <i class="fab fa-whatsapp"></i>
             </div>
             <h1>Написать в WhatsApp</h1>
-            <p class="subtitle">Введите номер телефона, чтобы начать диалог в WhatsApp. Номер будет автоматически отформатирован для перехода.</p>
+            <p class="subtitle">Просто введите номер телефона. Страна определится автоматически или выберите вручную.</p>
         </div>
         
         <div class="input-container">
             <label class="phone-label">Номер телефона</label>
             <div class="phone-input-wrapper">
-                <div class="country-code">+7</div>
                 <input 
                     type="tel" 
                     id="phoneInput" 
-                    class="phone-input formatted" 
-                    placeholder="(999) 123-45-67" 
-                    maxlength="15"
+                    class="phone-input" 
+                    placeholder="89991234567 или +79991234567"
                     autocomplete="off"
                 >
             </div>
-            <span class="hint">Введите номер, начинающийся с +7. Скобки, пробелы и дефисы будут удалены автоматически.</span>
+            <div class="country-info" id="countryInfo">
+                <span id="countryDisplay" class="country-display">+7</span>
+                <span id="countryName">Россия/Казахстан</span>
+                <span id="changeCountry" class="country-change">Изменить</span>
+            </div>
+            
+            <div id="countrySelector" class="country-selector">
+                <input type="text" id="countrySearch" class="country-search" placeholder="Поиск страны или кода...">
+                <div id="countryList" class="country-list">
+                    <!-- Страны будут добавлены через JS -->
+                </div>
+            </div>
+            
+            <span class="hint">Введите номер полностью. Можно начать с +7, 8, 7, 6 или другого кода страны.</span>
         </div>
         
         <button id="sendBtn" class="btn">
@@ -286,127 +357,431 @@
             const phoneInput = document.getElementById('phoneInput');
             const sendBtn = document.getElementById('sendBtn');
             const resultDiv = document.getElementById('result');
+            const countryDisplay = document.getElementById('countryDisplay');
+            const countryName = document.getElementById('countryName');
+            const changeCountryBtn = document.getElementById('changeCountry');
+            const countrySelector = document.getElementById('countrySelector');
+            const countrySearch = document.getElementById('countrySearch');
+            const countryList = document.getElementById('countryList');
+            const countryInfo = document.getElementById('countryInfo');
             
-            // Функция для форматирования номера в виде (999) 123-45-67
-            function formatPhoneNumber(value) {
-                // Удаляем все нецифровые символы, кроме ведущего +
-                let cleaned = value.replace(/\D/g, '');
+            // База данных стран
+            const countries = [
+                { code: '7', name: 'Россия/Казахстан', flag: '🇷🇺' },
+                { code: '1', name: 'США/Канада', flag: '🇺🇸' },
+                { code: '44', name: 'Великобритания', flag: '🇬🇧' },
+                { code: '49', name: 'Германия', flag: '🇩🇪' },
+                { code: '33', name: 'Франция', flag: '🇫🇷' },
+                { code: '39', name: 'Италия', flag: '🇮🇹' },
+                { code: '34', name: 'Испания', flag: '🇪🇸' },
+                { code: '55', name: 'Бразилия', flag: '🇧🇷' },
+                { code: '91', name: 'Индия', flag: '🇮🇳' },
+                { code: '86', name: 'Китай', flag: '🇨🇳' },
+                { code: '81', name: 'Япония', flag: '🇯🇵' },
+                { code: '82', name: 'Корея', flag: '🇰🇷' },
+                { code: '61', name: 'Австралия', flag: '🇦🇺' },
+                { code: '971', name: 'ОАЭ', flag: '🇦🇪' },
+                { code: '90', name: 'Турция', flag: '🇹🇷' },
+                { code: '380', name: 'Украина', flag: '🇺🇦' },
+                { code: '375', name: 'Беларусь', flag: '🇧🇾' },
+                { code: '48', name: 'Польша', flag: '🇵🇱' },
+                { code: '46', name: 'Швеция', flag: '🇸🇪' },
+                { code: '47', name: 'Норвегия', flag: '🇳🇴' },
+                { code: '358', name: 'Финляндия', flag: '🇫🇮' },
+                { code: '41', name: 'Швейцария', flag: '🇨🇭' },
+                { code: '43', name: 'Австрия', flag: '🇦🇹' },
+                { code: '31', name: 'Нидерланды', flag: '🇳🇱' },
+                { code: '32', name: 'Бельгия', flag: '🇧🇪' }
+            ];
+            
+            let currentCountry = countries[0]; // Россия по умолчанию
+            let lastFormattedValue = '';
+            let isFormatting = false;
+            let shouldFormat = true;
+            let formattingTimeout = null;
+            
+            // Отображение списка стран
+            function renderCountries(filter = '') {
+                countryList.innerHTML = '';
                 
-                // Если номер начинается с 8, меняем на 7
-                if (cleaned.startsWith('8')) {
-                    cleaned = '7' + cleaned.substring(1);
-                }
+                const filteredCountries = filter 
+                    ? countries.filter(country => 
+                        country.name.toLowerCase().includes(filter.toLowerCase()) ||
+                        country.code.includes(filter) ||
+                        (`+${country.code}`).includes(filter)
+                      )
+                    : countries;
                 
-                // Ограничиваем длину (10 цифр после +7)
-                cleaned = cleaned.substring(0, 10);
-                
-                // Форматируем номер
-                let formatted = '';
-                if (cleaned.length > 0) {
-                    formatted = '(' + cleaned.substring(0, 3);
-                }
-                if (cleaned.length >= 4) {
-                    formatted += ') ' + cleaned.substring(3, 6);
-                }
-                if (cleaned.length >= 7) {
-                    formatted += '-' + cleaned.substring(6, 8);
-                }
-                if (cleaned.length >= 9) {
-                    formatted += '-' + cleaned.substring(8, 10);
-                }
-                
-                return formatted;
+                filteredCountries.forEach(country => {
+                    const option = document.createElement('div');
+                    option.className = 'country-option';
+                    if (country.code === currentCountry.code) {
+                        option.classList.add('selected');
+                    }
+                    
+                    option.innerHTML = `
+                        <strong>${country.flag} +${country.code}</strong> - ${country.name}
+                    `;
+                    
+                    option.addEventListener('click', () => {
+                        selectCountry(country);
+                        countrySelector.classList.remove('show');
+                        countrySearch.value = '';
+                        renderCountries();
+                        // Форматируем после смены страны
+                        setTimeout(() => formatPhoneNumber(true), 10);
+                    });
+                    
+                    countryList.appendChild(option);
+                });
             }
             
-            // Функция для очистки номера от всех лишних символов
-            function cleanPhoneNumber(phone) {
-                // Удаляем все нецифровые символы
-                let cleaned = phone.replace(/\D/g, '');
+            // Выбор страны
+            function selectCountry(country) {
+                currentCountry = country;
+                countryDisplay.textContent = `+${country.code}`;
+                countryName.textContent = country.name;
+                checkValidity();
+            }
+            
+            // Определение страны по номеру
+            function detectCountryFromNumber(phoneNumber) {
+                const digits = phoneNumber.replace(/\D/g, '');
                 
-                // Если номер начинается с 8, меняем на 7
-                if (cleaned.startsWith('8')) {
-                    cleaned = '7' + cleaned.substring(1);
+                if (!digits) return null;
+                
+                // Если номер начинается с +, ищем код страны
+                if (phoneNumber.startsWith('+')) {
+                    const withoutPlus = phoneNumber.substring(1).replace(/\D/g, '');
+                    
+                    // Пробуем найти самый длинный подходящий код
+                    let bestMatch = null;
+                    let bestLength = 0;
+                    
+                    countries.forEach(country => {
+                        if (withoutPlus.startsWith(country.code) && country.code.length > bestLength) {
+                            bestMatch = country;
+                            bestLength = country.code.length;
+                        }
+                    });
+                    
+                    if (bestMatch) return bestMatch;
                 }
                 
-                // Убеждаемся, что номер начинается с 7 и имеет правильную длину
-                if (cleaned.startsWith('7') && cleaned.length === 11) {
-                    return cleaned;
+                // Если номер начинается с 8 - Россия/Казахстан
+                if (digits.startsWith('8')) {
+                    return countries[0]; // Россия/Казахстан
                 }
                 
-                // Если номер начинается не с 7, добавляем 7
-                if (!cleaned.startsWith('7') && cleaned.length === 10) {
-                    return '7' + cleaned;
+                // Если номер начинается с 7 и достаточно длинный - Россия/Казахстан
+                if (digits.startsWith('7') && digits.length >= 4) {
+                    return countries[0];
+                }
+                
+                // Если номер начинается с 6 и достаточно длинный - Казахстан
+                if (digits.startsWith('6') && digits.length >= 4) {
+                    return countries[0]; // Россия/Казахстан
                 }
                 
                 return null;
             }
             
-            // Обработчик ввода в поле телефона
-            phoneInput.addEventListener('input', function() {
-                // Получаем текущее значение без форматирования
-                let input = phoneInput.value;
+            // Форматирование номера с умным позиционированием курсора
+            function formatPhoneNumber(forceFormat = false) {
+                if (isFormatting) return;
                 
-                // Если пользователь пытается ввести + в начале, игнорируем (у нас уже есть фиксированный +7)
-                if (input.startsWith('+')) {
-                    // Удаляем + и все, что после него, кроме цифр
-                    input = input.substring(1).replace(/\D/g, '');
-                } else {
-                    // Просто удаляем все нецифровые символы
-                    input = input.replace(/\D/g, '');
+                const value = phoneInput.value;
+                const cursorPosition = phoneInput.selectionStart;
+                
+                // Если ввод только начался и это не принудительное форматирование, 
+                // даем пользователю возможность ввести первые цифры без форматирования
+                const digits = value.replace(/\D/g, '');
+                
+                // Определяем, нужно ли форматировать сейчас
+                const shouldFormatNow = forceFormat || 
+                    digits.length >= 4 || 
+                    value.includes('+') ||
+                    value.length - digits.length > 2; // Если уже есть форматирование
+                
+                if (!shouldFormatNow && !forceFormat) {
+                    // Пока не форматируем, просто обновляем страну если нужно
+                    const detectedCountry = detectCountryFromNumber(value);
+                    if (detectedCountry && detectedCountry.code !== currentCountry.code) {
+                        selectCountry(detectedCountry);
+                    }
+                    checkValidity();
+                    return;
                 }
                 
-                // Форматируем номер
-                phoneInput.value = formatPhoneNumber(input);
+                isFormatting = true;
                 
-                // Проверяем, является ли номер валидным (10 цифр после +7)
-                const cleaned = cleanPhoneNumber('7' + input);
-                sendBtn.disabled = !(cleaned && cleaned.length === 11);
-            });
-            
-            // Обработчик клика по кнопке
-            sendBtn.addEventListener('click', function() {
-                // Получаем значение из поля ввода
-                const phoneValue = phoneInput.value;
+                // Сохраняем только цифры для обработки
+                let cleanDigits = digits;
                 
-                // Очищаем номер
-                const cleanedNumber = cleanPhoneNumber('7' + phoneValue.replace(/\D/g, ''));
+                // Определяем, была ли удалена цифра (backspace/delete)
+                const previousDigits = lastFormattedValue.replace(/\D/g, '');
+                const isDeletion = cleanDigits.length < previousDigits.length;
                 
-                if (cleanedNumber && cleanedNumber.length === 11) {
-                    // Формируем ссылку WhatsApp
-                    const whatsappUrl = `https://wa.me/${cleanedNumber}`;
+                // Форматируем в зависимости от текущей страны
+                let formatted = '';
+                
+                switch(currentCountry.code) {
+                    case '7': // Россия/Казахстан
+                        if (cleanDigits.startsWith('7')) {
+                            cleanDigits = cleanDigits.substring(1);
+                        } else if (cleanDigits.startsWith('8')) {
+                            cleanDigits = cleanDigits.substring(1);
+                        } else if (cleanDigits.startsWith('6')) {
+                            cleanDigits = cleanDigits.substring(1); // Казахстан
+                        }
+                        
+                        if (cleanDigits.length > 0) formatted = '+7 ';
+                        if (cleanDigits.length > 0) formatted += '(' + cleanDigits.substring(0, Math.min(3, cleanDigits.length));
+                        if (cleanDigits.length >= 4) formatted += ') ' + cleanDigits.substring(3, Math.min(6, cleanDigits.length));
+                        if (cleanDigits.length >= 7) formatted += '-' + cleanDigits.substring(6, Math.min(8, cleanDigits.length));
+                        if (cleanDigits.length >= 9) formatted += '-' + cleanDigits.substring(8, Math.min(10, cleanDigits.length));
+                        break;
+                        
+                    case '1': // США/Канада
+                        if (cleanDigits.startsWith('1')) {
+                            cleanDigits = cleanDigits.substring(1);
+                        }
+                        
+                        if (cleanDigits.length > 0) formatted = '+1 ';
+                        if (cleanDigits.length > 0) formatted += '(' + cleanDigits.substring(0, Math.min(3, cleanDigits.length));
+                        if (cleanDigits.length >= 4) formatted += ') ' + cleanDigits.substring(3, Math.min(6, cleanDigits.length));
+                        if (cleanDigits.length >= 7) formatted += '-' + cleanDigits.substring(6, Math.min(10, cleanDigits.length));
+                        break;
+                        
+                    case '44': // Великобритания
+                        if (cleanDigits.startsWith('44')) {
+                            cleanDigits = cleanDigits.substring(2);
+                        }
+                        
+                        if (cleanDigits.length > 0) formatted = '+44 ';
+                        if (cleanDigits.length > 0) formatted += cleanDigits.substring(0, Math.min(4, cleanDigits.length));
+                        if (cleanDigits.length >= 5) formatted += ' ' + cleanDigits.substring(4, Math.min(10, cleanDigits.length));
+                        break;
+                        
+                    default:
+                        // Для остальных стран
+                        if (cleanDigits.startsWith(currentCountry.code)) {
+                            cleanDigits = cleanDigits.substring(currentCountry.code.length);
+                        }
+                        formatted = `+${currentCountry.code} ${cleanDigits}`;
+                }
+                
+                // Обновляем значение только если оно изменилось
+                if (formatted !== value) {
+                    phoneInput.value = formatted;
                     
-                    // Показываем результат
-                    resultDiv.innerHTML = `Открывается чат WhatsApp для номера: <a href="${whatsappUrl}" target="_blank">+${cleanedNumber}</a>`;
-                    resultDiv.classList.add('show');
+                    // Рассчитываем новую позицию курсора
+                    let newCursorPosition = cursorPosition;
                     
-                    // Открываем ссылку в новом окне
-                    window.open(whatsappUrl, '_blank');
+                    if (formatted.length !== value.length) {
+                        // Если длина изменилась, корректируем позицию курсора
+                        const addedChars = formatted.length - value.length;
+                        
+                        if (isDeletion) {
+                            // При удалении стараемся сохранить позицию
+                            newCursorPosition = Math.max(0, cursorPosition + addedChars);
+                        } else {
+                            // При добавлении цифры двигаем курсор вперед
+                            // Считаем количество цифр до позиции курсора в старом значении
+                            let digitsBeforeCursor = 0;
+                            for (let i = 0; i < cursorPosition && i < value.length; i++) {
+                                if (/\d/.test(value[i])) digitsBeforeCursor++;
+                            }
+                            
+                            // Находим позицию в новом значении после той же цифры
+                            let newPos = 0;
+                            let digitsFound = 0;
+                            while (newPos < formatted.length && digitsFound < digitsBeforeCursor) {
+                                if (/\d/.test(formatted[newPos])) digitsFound++;
+                                newPos++;
+                            }
+                            
+                            // Если это последняя цифра, ставим курсор после нее
+                            if (digitsFound === digitsBeforeCursor && digitsBeforeCursor === cleanDigits.length) {
+                                newPos = formatted.length;
+                            }
+                            
+                            newCursorPosition = newPos;
+                        }
+                    }
                     
-                    // Через 5 секунд скрываем результат
+                    // Устанавливаем курсор на корректную позицию
                     setTimeout(() => {
-                        resultDiv.classList.remove('show');
-                    }, 5000);
+                        phoneInput.setSelectionRange(newCursorPosition, newCursorPosition);
+                        isFormatting = false;
+                    }, 0);
                 } else {
-                    resultDiv.innerHTML = 'Пожалуйста, введите правильный номер телефона. Номер должен содержать 10 цифр после +7.';
-                    resultDiv.classList.add('show');
-                    
-                    // Фокусируемся на поле ввода
-                    phoneInput.focus();
+                    isFormatting = false;
+                }
+                
+                lastFormattedValue = formatted;
+                checkValidity();
+            }
+            
+            // Проверка валидности
+            function checkValidity() {
+                const value = phoneInput.value;
+                const digits = value.replace(/\D/g, '');
+                
+                if (!digits) {
+                    sendBtn.disabled = true;
+                    return false;
+                }
+                
+                // Проверяем длину в зависимости от страны
+                let numberWithoutCode = digits;
+                
+                // Убираем код страны
+                if (digits.startsWith(currentCountry.code)) {
+                    numberWithoutCode = digits.substring(currentCountry.code.length);
+                } else if (currentCountry.code === '7' && (digits.startsWith('8') || digits.startsWith('6'))) {
+                    numberWithoutCode = digits.substring(1);
+                } else if (currentCountry.code === '7' && digits.startsWith('7')) {
+                    numberWithoutCode = digits.substring(1);
+                } else if (currentCountry.code === '1' && digits.startsWith('1')) {
+                    numberWithoutCode = digits.substring(1);
+                } else if (currentCountry.code === '44' && digits.startsWith('44')) {
+                    numberWithoutCode = digits.substring(2);
+                }
+                
+                // Минимальная проверка длины
+                const isValid = numberWithoutCode.length >= 5;
+                sendBtn.disabled = !isValid;
+                
+                return isValid;
+            }
+            
+            // Обработчик ввода номера
+            phoneInput.addEventListener('input', function() {
+                const value = this.value;
+                
+                // Очищаем предыдущий таймаут
+                if (formattingTimeout) {
+                    clearTimeout(formattingTimeout);
+                }
+                
+                // Автоопределение страны
+                const detectedCountry = detectCountryFromNumber(value);
+                if (detectedCountry && detectedCountry.code !== currentCountry.code) {
+                    selectCountry(detectedCountry);
+                }
+                
+                // Откладываем форматирование на небольшое время
+                // Это позволяет вводить несколько цифр подряд без прерываний
+                formattingTimeout = setTimeout(() => {
+                    formatPhoneNumber();
+                }, 100);
+            });
+            
+            // Форматирование при потере фокуса
+            phoneInput.addEventListener('blur', function() {
+                formatPhoneNumber(true);
+            });
+            
+            // Обработчик для отслеживания вставки текста
+            phoneInput.addEventListener('paste', function(e) {
+                // Даем браузеру вставить текст, затем форматируем
+                setTimeout(() => {
+                    formatPhoneNumber(true);
+                }, 10);
+            });
+            
+            // Кнопка смены страны
+            changeCountryBtn.addEventListener('click', function() {
+                countrySelector.classList.toggle('show');
+                if (countrySelector.classList.contains('show')) {
+                    countrySearch.focus();
                 }
             });
             
-            // Обработчик нажатия клавиши Enter в поле ввода
+            // Поиск стран
+            countrySearch.addEventListener('input', function() {
+                renderCountries(this.value);
+            });
+            
+            // Отправка номера
+            sendBtn.addEventListener('click', function() {
+                const value = phoneInput.value;
+                const digits = value.replace(/\D/g, '');
+                
+                if (!digits) return;
+                
+                // Формируем полный номер
+                let fullNumber;
+                
+                if (digits.startsWith(currentCountry.code)) {
+                    fullNumber = digits;
+                } else if (currentCountry.code === '7' && (digits.startsWith('8') || digits.startsWith('6'))) {
+                    fullNumber = '7' + digits.substring(1);
+                } else if (currentCountry.code === '7' && digits.startsWith('7')) {
+                    fullNumber = digits;
+                } else {
+                    fullNumber = currentCountry.code + digits;
+                }
+                
+                // Формируем ссылку WhatsApp
+                const whatsappUrl = `https://wa.me/${fullNumber}`;
+                
+                // Показываем результат
+                resultDiv.innerHTML = `
+                    <p>Открывается чат WhatsApp:</p>
+                    <p><strong>Номер:</strong> <a href="${whatsappUrl}" target="_blank">+${fullNumber}</a></p>
+                    <p><strong>Страна:</strong> ${currentCountry.name}</p>
+                `;
+                resultDiv.classList.add('show');
+                
+                // Открываем ссылку
+                window.open(whatsappUrl, '_blank');
+                
+                // Скрываем результат через 5 секунд
+                setTimeout(() => {
+                    resultDiv.classList.remove('show');
+                }, 5000);
+            });
+            
+            // Enter в поле ввода
             phoneInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && !sendBtn.disabled) {
                     sendBtn.click();
                 }
             });
             
-            // Инициализация: делаем кнопку неактивной при загрузке
-            sendBtn.disabled = true;
+            // Escape закрывает выбор страны
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && countrySelector.classList.contains('show')) {
+                    countrySelector.classList.remove('show');
+                    countrySearch.value = '';
+                    renderCountries();
+                }
+            });
             
-            // Фокусируемся на поле ввода при загрузке страницы
+            // Клик вне выбора страны закрывает его
+            document.addEventListener('click', function(e) {
+                if (!countrySelector.contains(e.target) && 
+                    !changeCountryBtn.contains(e.target) && 
+                    !countryInfo.contains(e.target)) {
+                    countrySelector.classList.remove('show');
+                    countrySearch.value = '';
+                    renderCountries();
+                }
+            });
+            
+            // Инициализация
+            renderCountries();
+            selectCountry(currentCountry);
+            sendBtn.disabled = true;
             phoneInput.focus();
+            
+            // Примеры номеров в placeholder для разных устройств
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                phoneInput.placeholder = "Введите номер телефона";
+            }
         });
     </script>
 </body>
