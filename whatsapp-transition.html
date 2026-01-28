@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp - Написать по номеру</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #0c1317;
+            color: #e9edef;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: linear-gradient(rgba(12, 19, 23, 0.9), rgba(12, 19, 23, 0.9)), 
+                              url('https://images.unsplash.com/photo-1611605698335-8b1569810432?q=80&w=1974&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #111b21;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2a3942;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .whatsapp-logo {
+            font-size: 50px;
+            color: #25d366;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #e9edef;
+        }
+        
+        .subtitle {
+            color: #8696a0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .input-container {
+            margin-bottom: 30px;
+        }
+        
+        .phone-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #8696a0;
+            font-size: 14px;
+        }
+        
+        .phone-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .country-code {
+            background-color: #2a3942;
+            padding: 18px 15px;
+            border-radius: 12px 0 0 12px;
+            font-size: 18px;
+            color: #e9edef;
+            border: 1px solid #2a3942;
+            border-right: none;
+        }
+        
+        .phone-input {
+            width: 100%;
+            padding: 18px 15px;
+            font-size: 18px;
+            background-color: #2a3942;
+            color: #e9edef;
+            border: 1px solid #2a3942;
+            border-radius: 0 12px 12px 0;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .phone-input:focus {
+            border-color: #00a884;
+            background-color: #1f2c33;
+        }
+        
+        .phone-input::placeholder {
+            color: #8696a0;
+        }
+        
+        .phone-input.formatted {
+            letter-spacing: 1px;
+        }
+        
+        .hint {
+            font-size: 12px;
+            color: #8696a0;
+            margin-top: 8px;
+            display: block;
+        }
+        
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 18px;
+            background-color: #00a884;
+            color: #111b21;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #06cf9c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 168, 132, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn i {
+            margin-left: 10px;
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn:hover i {
+            transform: translateX(5px);
+        }
+        
+        .btn:disabled {
+            background-color: #2a3942;
+            color: #8696a0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn:disabled:hover i {
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #2a3942;
+            border-radius: 12px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result a {
+            color: #00a884;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        
+        .result a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #8696a0;
+            max-width: 500px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .phone-input, .country-code {
+                padding: 16px 12px;
+            }
+            
+            .btn {
+                padding: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 25px 15px;
+            }
+            
+            .whatsapp-logo {
+                font-size: 45px;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .phone-input, .country-code {
+                padding: 14px 10px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="whatsapp-logo">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <h1>Написать в WhatsApp</h1>
+            <p class="subtitle">Введите номер телефона, чтобы начать диалог в WhatsApp. Номер будет автоматически отформатирован для перехода.</p>
+        </div>
+        
+        <div class="input-container">
+            <label class="phone-label">Номер телефона</label>
+            <div class="phone-input-wrapper">
+                <div class="country-code">+7</div>
+                <input 
+                    type="tel" 
+                    id="phoneInput" 
+                    class="phone-input formatted" 
+                    placeholder="(999) 123-45-67" 
+                    maxlength="15"
+                    autocomplete="off"
+                >
+            </div>
+            <span class="hint">Введите номер, начинающийся с +7. Скобки, пробелы и дефисы будут удалены автоматически.</span>
+        </div>
+        
+        <button id="sendBtn" class="btn">
+            <span>Написать по номеру</span>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+        
+        <div id="result" class="result"></div>
+    </div>
+    
+    <div class="footer">
+        <p>Данный инструмент позволяет быстро перейти к диалогу в WhatsApp по указанному номеру телефона.</p>
+        <p>© 2023 WhatsApp. Этот сайт не является официальным продуктом WhatsApp.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.getElementById('phoneInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const resultDiv = document.getElementById('result');
+            
+            // Функция для форматирования номера в виде (999) 123-45-67
+            function formatPhoneNumber(value) {
+                // Удаляем все нецифровые символы, кроме ведущего +
+                let cleaned = value.replace(/\D/g, '');
+                
+                // Если номер начинается с 8, меняем на 7
+                if (cleaned.startsWith('8')) {
+                    cleaned = '7' + cleaned.substring(1);
+                }
+                
+                // Ограничиваем длину (10 цифр после +7)
+                cleaned = cleaned.substring(0, 10);
+                
+                // Форматируем номер
+                let formatted = '';
+                if (cleaned.length > 0) {
+                    formatted = '(' + cleaned.substring(0, 3);
+                }
+                if (cleaned.length >= 4) {
+                    formatted += ') ' + cleaned.substring(3, 6);
+                }
+                if (cleaned.length >= 7) {
+                    formatted += '-' + cleaned.substring(6, 8);
+                }
+                if (cleaned.length >= 9) {
+                    formatted += '-' + cleaned.substring(8, 10);
+                }
+                
+                return formatted;
+            }
+            
+            // Функция для очистки номера от всех лишних символов
+            function cleanPhoneNumber(phone) {
+                // Удаляем все нецифровые символы
+                let cleaned = phone.replace(/\D/g, '');
+                
+                // Если номер начинается с 8, меняем на 7
+                if (cleaned.startsWith('8')) {
+                    cleaned = '7' + cleaned.substring(1);
+                }
+                
+                // Убеждаемся, что номер начинается с 7 и имеет правильную длину
+                if (cleaned.startsWith('7') && cleaned.length === 11) {
+                    return cleaned;
+                }
+                
+                // Если номер начинается не с 7, добавляем 7
+                if (!cleaned.startsWith('7') && cleaned.length === 10) {
+                    return '7' + cleaned;
+                }
+                
+                return null;
+            }
+            
+            // Обработчик ввода в поле телефона
+            phoneInput.addEventListener('input', function() {
+                // Получаем текущее значение без форматирования
+                let input = phoneInput.value;
+                
+                // Если пользователь пытается ввести + в начале, игнорируем (у нас уже есть фиксированный +7)
+                if (input.startsWith('+')) {
+                    // Удаляем + и все, что после него, кроме цифр
+                    input = input.substring(1).replace(/\D/g, '');
+                } else {
+                    // Просто удаляем все нецифровые символы
+                    input = input.replace(/\D/g, '');
+                }
+                
+                // Форматируем номер
+                phoneInput.value = formatPhoneNumber(input);
+                
+                // Проверяем, является ли номер валидным (10 цифр после +7)
+                const cleaned = cleanPhoneNumber('7' + input);
+                sendBtn.disabled = !(cleaned && cleaned.length === 11);
+            });
+            
+            // Обработчик клика по кнопке
+            sendBtn.addEventListener('click', function() {
+                // Получаем значение из поля ввода
+                const phoneValue = phoneInput.value;
+                
+                // Очищаем номер
+                const cleanedNumber = cleanPhoneNumber('7' + phoneValue.replace(/\D/g, ''));
+                
+                if (cleanedNumber && cleanedNumber.length === 11) {
+                    // Формируем ссылку WhatsApp
+                    const whatsappUrl = `https://wa.me/${cleanedNumber}`;
+                    
+                    // Показываем результат
+                    resultDiv.innerHTML = `Открывается чат WhatsApp для номера: <a href="${whatsappUrl}" target="_blank">+${cleanedNumber}</a>`;
+                    resultDiv.classList.add('show');
+                    
+                    // Открываем ссылку в новом окне
+                    window.open(whatsappUrl, '_blank');
+                    
+                    // Через 5 секунд скрываем результат
+                    setTimeout(() => {
+                        resultDiv.classList.remove('show');
+                    }, 5000);
+                } else {
+                    resultDiv.innerHTML = 'Пожалуйста, введите правильный номер телефона. Номер должен содержать 10 цифр после +7.';
+                    resultDiv.classList.add('show');
+                    
+                    // Фокусируемся на поле ввода
+                    phoneInput.focus();
+                }
+            });
+            
+            // Обработчик нажатия клавиши Enter в поле ввода
+            phoneInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !sendBtn.disabled) {
+                    sendBtn.click();
+                }
+            });
+            
+            // Инициализация: делаем кнопку неактивной при загрузке
+            sendBtn.disabled = true;
+            
+            // Фокусируемся на поле ввода при загрузке страницы
+            phoneInput.focus();
+        });
+    </script>
+</body>
+</html>
